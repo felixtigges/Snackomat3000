@@ -1,4 +1,6 @@
+
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
@@ -39,12 +41,48 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 List punishments = ["Singen", "waschen", "Trainer Hiwi", "Opfer der Woche", ];
-StreamController<int> controller = StreamController<int>();
+
 class _MyHomePageState extends State<MyHomePage> {
+  StreamController<int> controller = new StreamController<int>();
+  final TextEditingController _textFieldController = new TextEditingController();
+  Future<void> _displayTextInputDialog(BuildContext context) async {
+  return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('TextField in Dialog'),
+          content: TextField(
+            onChanged: (value) {
+     
+            },
+            onSubmitted: (value){
+              
+              punishments.add(value);
+              setState(() {
+                
+              });
+            },
+            controller: _textFieldController,
+            decoration: const InputDecoration(hintText: "Text Field in Dialog"),
+          ),
+        );
+      });
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FortuneWheel(
+      appBar: AppBar(actions: [
+        IconButton(onPressed: ()  {
+          setState(() {
+            punishments.length > 2  ? punishments.removeLast()   : null;
+          });
+        }, icon: Icon(Icons.remove)),
+        IconButton(onPressed: () {
+          _displayTextInputDialog(context);
+        }, icon: const Icon(Icons.add))
+      ]),
+      body: punishments.isNotEmpty ? FortuneWheel(
   // changing the return animation when the user stops dragging
   /*physics: CircularPanPhysics(
     duration: const Duration(seconds: 1),
@@ -52,16 +90,12 @@ class _MyHomePageState extends State<MyHomePage> {
   ),*/
   rotationCount: 2,
    onFling: () {
-    controller.add(1);
+    controller.add(Random().nextInt(punishments.length));
   },
   animateFirst: false,
   selected: controller.stream,
-  items: const [
-    FortuneItem(child: Text('Han Solo')),
-    FortuneItem(child: Text('Yoda')),
-    FortuneItem(child: Text('Obi-Wan Kenobi')),
-  ],
-)
+  items: [for (var punishment in punishments) FortuneItem(child: Text(punishment))]
+) : Center(child: Text("Keine Strafen in der Liste!"),)
     );
   }
 }
