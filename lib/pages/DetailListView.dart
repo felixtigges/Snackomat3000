@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:snackomat/classes/FortuneWheelClass.dart';
+import 'package:snackomat3000/classes/FortuneWheelClass.dart';
 
 class ViewLists extends StatefulWidget {
   final FortuneData data;
