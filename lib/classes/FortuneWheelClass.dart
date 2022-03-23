@@ -4,10 +4,8 @@ class FortuneData{
 
   FortuneData(this.name, this.data);
 
-  getName(){
-    return name;
-  }
-  getList(){
-    return data;
-  }
+  Map toJson() => {
+    'name': name,
+    'data': data,
+  };
 }

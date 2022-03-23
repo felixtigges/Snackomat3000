@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:snackomat3000/classes/FortuneWheelClass.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snackomat3000/main.dart';
 
 class ViewLists extends StatefulWidget {
-  final FortuneData data;
+  final Map<String, dynamic> data;
   const ViewLists({Key? key, required this.data}) : super(key: key);
 
   @override
@@ -10,17 +13,18 @@ class ViewLists extends StatefulWidget {
 }
 
 TextEditingController textEditingController = TextEditingController();
-Future<String?> openAddDialog(context, FortuneData data) => showDialog(
+Future<String?> openAddDialog(context, data) => showDialog(
     context: context,
     builder: (context) => AlertDialog(
-          title: Text(data.name + " hinzufügen"),
+          title: Text(data['name'] + " hinzufügen"),
           content: TextField(
             controller: textEditingController,
           ),
           actions: [
             TextButton(
-                onPressed: () {
-                  data.data.add(textEditingController.text);
+                onPressed: () async {
+                  data['data'].add(textEditingController.text);
+                  await saveData();
                   Navigator.of(context).pop();
                 },
                 child: const Text("HINZUFÜGEN"))
@@ -40,12 +44,18 @@ _openWarningDialog(context, String dataName) => showDialog(
       );
     });
 
+saveData() async {
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setString("list", jsonEncode(list));
+}
+
 class _ViewListsState extends State<ViewLists> {
-  _removeData(int index) {
-    if (widget.data.data.length == 2) {
-      _openWarningDialog(context, widget.data.name);
+  _removeData(int index) async {
+    if (widget.data['data'].length == 2) {
+      _openWarningDialog(context, widget.data['name']);
     } else {
-      widget.data.data.removeAt(index);
+      widget.data['data'].removeAt(index);
+      await saveData();
     }
   }
 
@@ -62,10 +72,10 @@ class _ViewListsState extends State<ViewLists> {
           child: const Icon(Icons.add),
         ),
         body: ListView.builder(
-            itemCount: widget.data.data.length,
+            itemCount: widget.data['data'].length,
             itemBuilder: ((context, index) {
               return ListTile(
-                title: Text(widget.data.data[index]),
+                title: Text(widget.data['data'][index]),
                 trailing: IconButton(
                   icon: const Icon(Icons.remove),
                   onPressed: () {

@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:snackomat3000/classes/FortuneWheelClass.dart';
 import 'package:snackomat3000/pages/DetailListView.dart';
 import 'package:snackomat3000/pages/FortuneView.dart';
@@ -34,42 +37,122 @@ class MyApp extends StatelessWidget {
 
 final players = FortuneData("Spieler", ["Jonas Bauerdick", "Niklas Schmidt"]);
 final punishment = FortuneData("Strafen", ["Singen", "Trainer Hiwi"]);
+final firstList = [players, punishment];
+var list = [];
 
-class Startpage extends StatelessWidget {
+class Startpage extends StatefulWidget {
   Startpage({Key? key}) : super(key: key);
 
-  final list = [players, punishment];
+  @override
+  State<Startpage> createState() => _StartpageState();
+}
+
+class _StartpageState extends State<Startpage> {
+  var loading = true;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  Future<SharedPreferences> getPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getString("firstLogin") != "loggedIn") {
+      prefs.clear();
+      prefs.setString("list", jsonEncode(firstList));
+      prefs.setString("firstLogin", "loggedIn");
+    }
+    list = jsonDecode(prefs.getString("list")!);
+    loading = false;
+    setState(() {});
+    return prefs;
+  }
+
+  Future<String> loadPrefs() async {
+    await Future.delayed(const Duration(seconds: 2));
+    await getPreferences();
+    return "Hallo";
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(),
-        body: ListView.builder(
-            itemCount: list.length,
-            itemBuilder: ((context, index) {
-              return ListTile(
-                title: Text(list[index].name),
-                trailing: IconButton(
-                  icon: const Icon(Icons.change_circle),
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ViewLists(
-                                  data: list[index],
-                                )));
-                  },
-                ),
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => FortuneView(
-                                fortuneData: list[index],
-                              )));
-                },
-              );
-            })));
+        body: loading
+            ? FutureBuilder<String>(
+                future: loadPrefs(),
+                builder:
+                    (BuildContext context, AsyncSnapshot<String> snapshot) {
+                  List<Widget> children;
+                  if (snapshot.hasData) {
+                    children = <Widget>[
+                      const Icon(
+                        Icons.check_circle_outline,
+                        color: Colors.green,
+                        size: 60,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Text('Result: ${snapshot.data}'),
+                      )
+                    ];
+                  } else if (snapshot.hasError) {
+                    children = <Widget>[
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 60,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Text('Error: ${snapshot.error}'),
+                      )
+                    ];
+                  } else {
+                    children = const <Widget>[
+                      SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: CircularProgressIndicator(),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(top: 16),
+                        child: Text('Laden ...'),
+                      )
+                    ];
+                  }
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: children,
+                    ),
+                  );
+                })
+            : ListView.builder(
+                itemCount: list.length,
+                itemBuilder: ((context, index) {
+                  return ListTile(
+                    title: Text(list[index]['name']),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.change_circle),
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ViewLists(
+                                      data: list[index],
+                                    )));
+                      },
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => FortuneView(
+                                    fortuneData: list[index],
+                                  )));
+                    },
+                  );
+                })));
   }
 }
-
