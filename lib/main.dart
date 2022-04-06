@@ -14,6 +14,7 @@ class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -35,7 +36,28 @@ class MyApp extends StatelessWidget {
   }
 }
 
-final players = FortuneData("Spieler", ["Jonas Bauerdick", "Niklas Schmidt"]);
+final players = FortuneData("Spieler", [
+  "Jonas Bauerdick",
+  "Niklas Schmidt",
+  "Jan-Niklas Nöcker",
+  "Nikolaj Diesendorf",
+  "Felix Tigges",
+  "Davin-Jay Emde",
+  "Jan Büsse",
+  "Pasquale Curcio",
+  "Leon Ludwig",
+  "Sebastian Held",
+  "Erik Dier",
+  "Tobias Kuschwald",
+  "Jonas Kampmann",
+  "Lennard Willeke",
+  "Chris Haumer",
+  "David Peplinski",
+  "Jann Conrads",
+  "Aaron Steinkemper",
+  "Maximillian Mertin",
+  "Akhas Ketheswaran"
+]);
 final punishment = FortuneData("Strafen", ["Singen", "Trainer Hiwi"]);
 final firstList = [players, punishment];
 var list = [];
@@ -51,7 +73,6 @@ class _StartpageState extends State<Startpage> {
   var loading = true;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -69,7 +90,7 @@ class _StartpageState extends State<Startpage> {
   }
 
   Future<String> loadPrefs() async {
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 0));
     await getPreferences();
     return "Hallo";
   }
@@ -77,7 +98,17 @@ class _StartpageState extends State<Startpage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  prefs.clear();
+                  await getPreferences();
+                },
+                icon: const Icon(Icons.replay_outlined))
+          ],
+        ),
         body: loading
             ? FutureBuilder<String>(
                 future: loadPrefs(),
