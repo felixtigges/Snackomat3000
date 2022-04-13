@@ -37,6 +37,8 @@ dependencies:
   # Glücksrad
   flutter_fortune_wheel: ^1.0.0
   shared_preferences: ^2.0.13
+  # Für http requests
+  http: ^0.13.4
 
 dev_dependencies:
   flutter_test:

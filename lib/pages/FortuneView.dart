@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
+import 'package:snackomat3000/main.dart';
 
 class FortuneView extends StatefulWidget {
   final Map<String, dynamic> fortuneData;
@@ -19,6 +20,7 @@ StreamController<int>? controller;
 class _FortuneViewState extends State<FortuneView> {
   @override
   void initState() {
+    loadBool();
     controller?.close();
     controller = StreamController<int>();
     super.initState();
@@ -66,10 +68,16 @@ class _FortuneViewState extends State<FortuneView> {
                 // styleStrategy: const UniformStyleStrategy(),
                 rotationCount: 10,
                 onFling: () {
-                  do {
+                  if (data.contains(choose) && chooseme) {
+                    do {
+                      selected =
+                          Random().nextInt(widget.fortuneData['data'].length);
+                    } while (data[selected] != choose);
+                  } else {
                     selected =
                         Random().nextInt(widget.fortuneData['data'].length);
-                  } while (data[selected] == "Felix Tigges");
+                  }
+
                   controller?.add(selected);
                 },
                 onAnimationEnd: () async {
