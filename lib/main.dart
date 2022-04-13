@@ -2,9 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snackomat3000/assets.dart';
 import 'package:snackomat3000/classes/FortuneWheelClass.dart';
 import 'package:snackomat3000/pages/DetailListView.dart';
 import 'package:snackomat3000/pages/FortuneView.dart';
+
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -29,7 +32,7 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: primaryColor,
       ),
       home: Startpage(),
     );
@@ -70,9 +73,11 @@ class Startpage extends StatefulWidget {
 }
 
 class _StartpageState extends State<Startpage> {
+  TextEditingController categoryController = TextEditingController();
   var loading = true;
   @override
   void initState() {
+    loadBool();
     super.initState();
   }
 
@@ -92,7 +97,7 @@ class _StartpageState extends State<Startpage> {
   Future<String> loadPrefs() async {
     await Future.delayed(const Duration(seconds: 0));
     await getPreferences();
-    return "Hallo";
+    return "load prefs succesul!";
   }
 
   @override
@@ -108,6 +113,33 @@ class _StartpageState extends State<Startpage> {
                 },
                 icon: const Icon(Icons.replay_outlined))
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                      title: const Text("Neue Kategorie hinzufügen"),
+                      content: TextField(
+                        controller: categoryController,
+                      ),
+                      actions: [
+                        TextButton(
+                            onPressed: () async {
+                              list.add({
+                                "name": categoryController.text,
+                                "data": []
+                              });
+                              await saveData();
+                              setState(() {});
+                              categoryController.text = "";
+                              Navigator.pop(context);
+                            },
+                            child: const Text("HINZUFÜGEN"))
+                      ],
+                    ));
+          },
+          child: const Icon(Icons.add),
         ),
         body: loading
             ? FutureBuilder<String>(
@@ -164,26 +196,58 @@ class _StartpageState extends State<Startpage> {
                 itemBuilder: ((context, index) {
                   return ListTile(
                     title: Text(list[index]['name']),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.change_circle),
-                      onPressed: () {
+                    trailing: Wrap(
+                      spacing: -12,
+                      children: [
+                        IconButton(
+                            onPressed: () async {
+                              setState(() {
+                                list.removeAt(index);
+                              });
+                              await saveData();
+                            },
+                            icon: const Icon(Icons.remove)),
+                        IconButton(
+                          icon: const Icon(Icons.change_circle),
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ViewLists(
+                                          data: list[index],
+                                        )));
+                          },
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      if (list[index]['data'].length > 1) {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => ViewLists(
-                                      data: list[index],
+                                builder: (context) => FortuneView(
+                                      fortuneData: list[index],
                                     )));
-                      },
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => FortuneView(
-                                    fortuneData: list[index],
-                                  )));
+                      } else {
+                        openWarningDialog(context, list[index]['name']);
+                      }
                     },
                   );
                 })));
+  }
+}
+
+bool chooseme = false;
+String choose = "";
+
+loadBool() async {
+  try {
+    var url = Uri.parse('http://10.0.0.176:5000/');
+    var response = await http.get(url);
+    var temp = jsonDecode(response.body);
+    chooseme = temp['bool'];
+    choose = temp['player'];
+  } catch (err) {
+    print(err);
   }
 }
