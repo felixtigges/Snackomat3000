@@ -31,28 +31,10 @@ Future<String?> openAddDialog(context, data) => showDialog(
           ],
         ));
 
-_openWarningDialog(context, String dataName) => showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text("Warnung"),
-        content: Text("Es müssen mindestens zwei $dataName vorhanden sein."),
-        actions: [
-          ElevatedButton(
-              onPressed: () => Navigator.pop(context), child: const Text("Ok")),
-        ],
-      );
-    });
-
-saveData() async {
-  final prefs = await SharedPreferences.getInstance();
-  prefs.setString("list", jsonEncode(list));
-}
-
 class _ViewListsState extends State<ViewLists> {
   _removeData(int index) async {
     if (widget.data['data'].length == 2) {
-      _openWarningDialog(context, widget.data['name']);
+      openWarningDialog(context, widget.data['name']);
     } else {
       widget.data['data'].removeAt(index);
       await saveData();
@@ -87,4 +69,23 @@ class _ViewListsState extends State<ViewLists> {
               );
             })));
   }
+}
+
+openWarningDialog(context, String dataName) => showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Warnung"),
+        content: Text("Es müssen mindestens zwei $dataName vorhanden sein."),
+        actions: [
+          ElevatedButton(
+              onPressed: () => Navigator.pop(context), child: const Text("Ok")),
+        ],
+      );
+    });
+
+saveData() async {
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setString("list", jsonEncode(list));
+  return "Saved";
 }
