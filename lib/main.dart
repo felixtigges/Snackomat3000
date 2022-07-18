@@ -77,7 +77,6 @@ class _StartpageState extends State<Startpage> {
   var loading = true;
   @override
   void initState() {
-    loadBool();
     super.initState();
   }
 
@@ -234,20 +233,5 @@ class _StartpageState extends State<Startpage> {
                     },
                   );
                 })));
-  }
-}
-
-bool chooseme = false;
-String choose = "";
-
-loadBool() async {
-  try {
-    var url = Uri.parse('http://10.0.0.176:5000/');
-    var response = await http.get(url);
-    var temp = jsonDecode(response.body);
-    chooseme = temp['bool'];
-    choose = temp['player'];
-  } catch (err) {
-    print(err);
   }
 }

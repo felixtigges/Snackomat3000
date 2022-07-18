@@ -20,7 +20,6 @@ StreamController<int>? controller;
 class _FortuneViewState extends State<FortuneView> {
   @override
   void initState() {
-    loadBool();
     controller?.close();
     controller = StreamController<int>();
     super.initState();
@@ -65,18 +64,10 @@ class _FortuneViewState extends State<FortuneView> {
         ),
         body: widget.fortuneData['data'].isNotEmpty
             ? FortuneWheel(
-                // styleStrategy: const UniformStyleStrategy(),
                 rotationCount: 10,
                 onFling: () {
-                  if (data.contains(choose) && chooseme) {
-                    do {
-                      selected =
-                          Random().nextInt(widget.fortuneData['data'].length);
-                    } while (data[selected] != choose);
-                  } else {
-                    selected =
-                        Random().nextInt(widget.fortuneData['data'].length);
-                  }
+                  selected =
+                      Random().nextInt(widget.fortuneData['data'].length);
 
                   controller?.add(selected);
                 },
